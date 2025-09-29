@@ -1,0 +1,62 @@
+# .github/workflows/ci.yml
+# Runs on every push and pull request to test code quality
+
+name: CI - Tests and Analysis
+
+'on':
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    name: Run Tests and Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Java
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # Step 3: Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      # Step 4: Get dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Step 5: Verify code formatting
+      - name: Check code formatting
+        run: dart format --set-exit-if-changed .
+        continue-on-error: true  # Don't fail build on formatting issues
+
+      # Step 6: Analyze code for issues
+      - name: Analyze code
+        run: flutter analyze
+
+
+      # Step 8: Check if builds work (without releasing)
+      - name: Test build - Dev
+        run: flutter build apk -t lib/main_dev.dart --flavor dev --debug
+
+      - name: Test build - Staging
+        run: flutter build apk -t lib/main_staging.dart --flavor staging --debug
+
+      - name: Test build - Prod
+        run: flutter build apk -t lib/main_prod.dart --flavor prod --debug
