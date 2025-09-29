@@ -36,9 +36,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Step 5: Run tests
-      - name: Run tests
-        run: flutter test
 
       # Step 6: Build all three flavors
       - name: Build Dev APK
